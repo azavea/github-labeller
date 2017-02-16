@@ -1,12 +1,13 @@
 package main
 
 import (
+    // core
     "flag"
     "fmt"
     "os"
 
+    // 3rd party
     "golang.org/x/oauth2"
-
     "github.com/BurntSushi/toml"
     "github.com/google/go-github/github"
 )
