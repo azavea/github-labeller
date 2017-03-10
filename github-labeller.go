@@ -2,6 +2,7 @@ package main
 
 import (
     // core
+    "context"
     "flag"
     "fmt"
     "os"
@@ -53,10 +54,11 @@ type Config struct {
 }
 
 func createLabel(client *github.Client, orgName string, repo string, label *github.Label) {
-    _, _, err := client.Issues.GetLabel(orgName, repo, *label.Name)
+    ctx := context.Background()
+    _, _, err := client.Issues.GetLabel(ctx, orgName, repo, *label.Name)
     // If label doesn't exist, create it
     if err != nil && strings.Contains(err.Error(), "404") {
-        newLabel, _, err := client.Issues.CreateLabel(orgName, repo, label)
+        newLabel, _, err := client.Issues.CreateLabel(ctx, orgName, repo, label)
         if err != nil {
             fmt.Printf("Error: %s\n", err)
         } else {
@@ -64,7 +66,7 @@ func createLabel(client *github.Client, orgName string, repo string, label *gith
         }
     // If label does exist, update it
     } else {
-        newLabel, _, err := client.Issues.EditLabel(orgName, repo, *label.Name, label)
+        newLabel, _, err := client.Issues.EditLabel(ctx, orgName, repo, *label.Name, label)
         if err != nil {
             fmt.Printf("Error: %s\n", err)
         } else {
@@ -74,7 +76,8 @@ func createLabel(client *github.Client, orgName string, repo string, label *gith
 }
 
 func deleteLabel(client *github.Client, orgName string, repo string, labelName string) {
-    _, err := client.Issues.DeleteLabel(orgName, repo, labelName)
+    ctx := context.Background()
+    _, err := client.Issues.DeleteLabel(ctx, orgName, repo, labelName)
     if err != nil && !strings.Contains(err.Error(), "404") {
         fmt.Printf("Error: %s\n", err)
     } else {
