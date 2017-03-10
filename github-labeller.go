@@ -5,6 +5,7 @@ import (
     "flag"
     "fmt"
     "os"
+    "strings"
 
     // 3rd party
     "golang.org/x/oauth2"
@@ -14,16 +15,17 @@ import (
 
 const helpString = `
 
-Usage: github-labeller <options> <label name> <color>
+Usage:
 
-Must provide one of either -create or -delete, otherwise this tool is a noop.
+github-labeller create <label name> <color>
+github-labeller delete <label name>
 
 For proper operation of the tool, its best if the label name and color
-are quoted. For example:
-    github-labeller -create "foo label" "#fff"
+are quoted when provided. For example:
+    github-labeller create "foo label" "#fff"
 
-You can create an API token for use with this app by logging into GitHub with
-your user and going to https://github.com/settings/tokens, and creating a new
+You can create an API token for use with this app going to
+https://github.com/settings/tokens, logging in, and creating a new
 "Personal Access Token" with the "repo" permission.
 
 `
@@ -38,44 +40,76 @@ func usage() {
     fmt.Printf(helpString)
     flag.PrintDefaults()
     fmt.Printf("\n")
+    os.Exit(0)
+}
+
+type organization struct {
+    Repositories []string
 }
 
 type Config struct {
     Token string
-    Repos []string
+    Orgs map[string]organization
+}
+
+func createLabel(client *github.Client, orgName string, repo string, label *github.Label) {
+    _, _, err := client.Issues.GetLabel(orgName, repo, *label.Name)
+    // If label doesn't exist, create it
+    if err != nil && strings.Contains(err.Error(), "404") {
+        newLabel, _, err := client.Issues.CreateLabel(orgName, repo, label)
+        if err != nil {
+            fmt.Printf("Error: %s\n", err)
+        } else {
+            fmt.Printf("CREATED: %s/%s#%s\n", orgName, repo, *newLabel.Name)
+        }
+    // If label does exist, update it
+    } else {
+        newLabel, _, err := client.Issues.EditLabel(orgName, repo, *label.Name, label)
+        if err != nil {
+            fmt.Printf("Error: %s\n", err)
+        } else {
+            fmt.Printf("UPDATED: %s/%s#%s\n", orgName, repo, *newLabel.Name)
+        }
+    }
+}
+
+func deleteLabel(client *github.Client, orgName string, repo string, labelName string) {
+    _, err := client.Issues.DeleteLabel(orgName, repo, labelName)
+    if err != nil && !strings.Contains(err.Error(), "404") {
+        fmt.Printf("Error: %s\n", err)
+    } else {
+        fmt.Printf("DELETED: %s/%s#%s\n", orgName, repo, labelName)
+    }
 }
 
 func main() {
     var (
         isHelp bool
-        isCreate bool
-        isDelete bool
         tokenFlag string
     )
 
     flag.BoolVar(&isHelp, "help", false, "Print help string and exit")
-    flag.BoolVar(&isCreate, "create", false, "If provided, create the specified label")
-    flag.BoolVar(&isDelete, "delete", false, "If provided, delete the specified label")
     flag.StringVar(&tokenFlag, "token", "", "GitHub API token to authenticate with -- overrides token set via config")
     flag.Parse()
 
-    if isHelp || flag.NArg() != 2 {
+    if isHelp || flag.NArg() < 3 {
         usage()
-        os.Exit(0)
     }
+
+    operation := flag.Arg(0)
+    labelName := flag.Arg(1)
+    labelColor := flag.Arg(2)
 
     var config Config
     // TODO: Make home dir query cross-platform
-    var filename = os.Getenv("HOME") + "/.github-labeller"
-    fmt.Printf("Reading config from: %s\n", filename)
+    filename := os.Getenv("HOME") + "/.github-labeller"
+    fmt.Printf("\nReading config from %s...\n\n", filename)
     if _, err := toml.DecodeFile(filename, &config); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
-    var labelName = flag.Arg(0)
-    var labelColor = flag.Arg(1)
-    var apiToken = ""
+    apiToken := ""
     if tokenFlag != "" {
         apiToken = tokenFlag
     } else if config.Token != "" {
@@ -85,22 +119,21 @@ func main() {
         os.Exit(1)
     }
 
-    fmt.Printf("Label: %s, Color: %s\n", labelName, labelColor)
-    fmt.Printf("Token: %s\n", apiToken)
-    fmt.Printf("Repos: %s\n", config.Repos)
-
     ts := oauth2.StaticTokenSource(
         &oauth2.Token{AccessToken: apiToken},
     )
     tc := oauth2.NewClient(oauth2.NoContext, ts)
-
     client := github.NewClient(tc)
 
-    // TODO: Update config so that it allows multiple orgs
-    labels, _, err := client.Issues.ListLabels("azavea", config.Repos[0], nil)
-    if err != nil {
-        fmt.Printf("Error: %s\n", err)
-        os.Exit(1)
+    label := &github.Label{URL: nil, Name: &labelName, Color: &labelColor}
+
+    for orgName, org := range config.Orgs {
+        for _, repo := range org.Repositories {
+            if operation == "create" {
+                createLabel(client, orgName, repo, label)
+            } else if operation == "delete" {
+                deleteLabel(client, orgName, repo, *label.Name)
+            }
+        }
     }
-    fmt.Printf("Labels: %s\n", labels)
 }

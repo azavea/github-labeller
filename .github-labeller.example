@@ -1,4 +1,12 @@
-Token = "your github access token here"
-Repos = [
-"list-of-repos-to-manage",
+token = "your github access token here"
+
+[orgs]
+
+[orgs.foo]
+repositories = [
+    "repo-one",
+    "repo-two"
 ]
+
+[orgs.bar]
+repositories = []
