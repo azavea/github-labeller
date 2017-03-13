@@ -10,9 +10,25 @@ Supported actions:
 
 Download the binary for your platform by going to the releases page and place it somewhere on your `$PATH`.
 
-Configure the application by copying the example .github-labeller config file to your home dir:
+Configure the application by creating a `.github-labeller` file in your HOME dir:
 ```
-cp .github-labeller.example ~/.github-labeller
+touch ~/.github-labeller
+```
+
+Copy the following template into `~/.github-labeller` and configure as appropriate:
+```toml
+
+token = "your github access token here"
+
+[orgs]
+# Multiple [org.foo] blocks can be provided under the [orgs] section
+# Replace foo with the name of your GitHub org or account
+[orgs.foo]
+repositories = [
+    "repo-one",
+    "repo-two"
+]
+
 ```
 
 #### Getting your GitHub access token
@@ -34,4 +50,14 @@ github-labeller delete "todo"
 
 ## Developing
 
-Checkout to `goworkspace/src/github.com/azavea/github-labeller`. Then use the standard `go` commands to build and install the tool to your go bin dir.
+Checkout to `${GOPATH}/src/github.com/azavea/github-labeller`. Build by running `make`. After building, run with `./github-labeller`. Additional commands are available in the Makefile.
+
+#### Building a release
+
+Follow these steps when creating a new release:
+- Create a new release branch
+- Run `make release`
+- Update the CHANGELOG.md
+- Update the version string in `github-labeller.go`, following SEMVER
+- Commit the changes and create a new git tag using the same version string
+- Push and merge to master
