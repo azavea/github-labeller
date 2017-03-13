@@ -8,7 +8,7 @@ Supported actions:
 
 ## Getting Started
 
-Go to the [releases page]() and download the zip for the most recent release. Extract it and copy the binary for your platform from the `./bin` directory to a location on your `$PATH`. Consider renaming the binary to remove the platform postfix.
+Go to the [releases page](https://github.com/azavea/github-labeller/releases) and download the zip for the most recent release. Extract it and copy the binary for your platform from the `./bin` directory to a location on your `$PATH`. Consider renaming the binary to remove the platform postfix.
 
 Configure the application by creating a `.github-labeller` file in your HOME dir:
 ```
