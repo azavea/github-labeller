@@ -14,6 +14,8 @@ import (
     "github.com/google/go-github/github"
 )
 
+const VERSION = "UNRELEASED"
+
 const helpString = `
 
 Usage:
@@ -23,7 +25,7 @@ github-labeller delete <label name>
 
 For proper operation of the tool, its best if the label name and color
 are quoted when provided. For example:
-    github-labeller create "foo label" "#fff"
+    github-labeller create "foo label" "fff"
 
 You can create an API token for use with this app going to
 https://github.com/settings/tokens, logging in, and creating a new
@@ -88,12 +90,19 @@ func deleteLabel(client *github.Client, orgName string, repo string, labelName s
 func main() {
     var (
         isHelp bool
+        isVersion bool
         tokenFlag string
     )
 
     flag.BoolVar(&isHelp, "help", false, "Print help string and exit")
+    flag.BoolVar(&isVersion, "version", false, "Print version string and exit")
     flag.StringVar(&tokenFlag, "token", "", "GitHub API token to authenticate with -- overrides token set via config")
     flag.Parse()
+
+    if isVersion {
+        fmt.Printf("%s\n", VERSION)
+        os.Exit(0)
+    }
 
     if isHelp || flag.NArg() < 3 {
         usage()
