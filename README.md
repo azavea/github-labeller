@@ -8,7 +8,7 @@ Supported actions:
 
 ## Getting Started
 
-Download the binary for your platform by going to the releases page and place it somewhere on your `$PATH`.
+Go to the [releases page]() and download the zip for the most recent release. Extract it and copy the binary for your platform from the `./bin` directory to a location on your `$PATH`. Consider renaming the binary to remove the platform postfix.
 
 Configure the application by creating a `.github-labeller` file in your HOME dir:
 ```
@@ -55,10 +55,10 @@ Checkout to `${GOPATH}/src/github.com/azavea/github-labeller`. Build by running 
 #### Building a release
 
 Follow these steps when creating a new release:
-- Create a new release branch
+- Create a new release branch via git flow
 - Update the CHANGELOG.md
 - Update the version string in `github-labeller.go`, following SEMVER
 - Run `make release`
 - Commit the changes and create a new git tag using the same version string
-- Push and merge to master
-- Create a release in the GitHub UI
+- Finish the release branch via git flow
+- Push the develop and master branches, along with the new release tag
