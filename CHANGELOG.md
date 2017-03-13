@@ -1,6 +1,6 @@
 # Change Log
 
-## [ Unreleased ]
+## [ 0.0.1 ] - 2017-03-13
 
 ### Added:
 - Support for creating/updating/deleting GitHub labels in bulk, based on a list of

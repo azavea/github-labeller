@@ -14,7 +14,7 @@ import (
     "github.com/google/go-github/github"
 )
 
-const VERSION = "UNRELEASED"
+const VERSION = "0.0.1"
 
 const helpString = `
 

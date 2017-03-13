@@ -56,8 +56,9 @@ Checkout to `${GOPATH}/src/github.com/azavea/github-labeller`. Build by running 
 
 Follow these steps when creating a new release:
 - Create a new release branch
-- Run `make release`
 - Update the CHANGELOG.md
 - Update the version string in `github-labeller.go`, following SEMVER
+- Run `make release`
 - Commit the changes and create a new git tag using the same version string
 - Push and merge to master
+- Create a release in the GitHub UI
